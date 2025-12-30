@@ -76,8 +76,8 @@ Here is an example cron configuration to send workouts Mon/Wed at 6 AM and check
 
 ```bash
 crontab -e
-0 6 * * 1,3 PATH/TO/PROJECT/aiworkoutplanner/venv/bin/activate && cd PATH/TO/PROJECT/aiworkoutplanner/src && PATH/TO/PROJECT/aiworkoutplanner/venv/bin/python send_workout.py > /dev/null 2>&1
-30 7 * * 1,3 PATH/TO/PROJECT/aiworkoutplanner/venv/bin/activate && cd PATH/TO/PROJECT/aiworkoutplanner/src && PATH/TO/PROJECT/aiworkoutplanner/venv/bin/python check_responses.py > /dev/null 2>&1
+0 6 * * 1,3 . PATH/TO/PROJECT/aiworkoutplanner/venv/bin/activate && cd PATH/TO/PROJECT/aiworkoutplanner/src && PATH/TO/PROJECT/aiworkoutplanner/venv/bin/python send_workout.py > /dev/null 2>&1
+30 7 * * 1,3 . PATH/TO/PROJECT/aiworkoutplanner/venv/bin/activate && cd PATH/TO/PROJECT/aiworkoutplanner/src && PATH/TO/PROJECT/aiworkoutplanner/venv/bin/python check_responses.py > /dev/null 2>&1
 ```
 
 ## Behavior & Workout Flow
