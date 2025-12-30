@@ -35,7 +35,7 @@ def agent_generate_workout_plan(model_name: str, history_string: str) -> str:
     
     5. **Motivational Quote**: End the workout with an inspiring fitness/strength quote to motivate the user.
     
-    Keep it realistic for a 30-40 minute session. Focus on strength progression over volume.
+    Keep it realistic for a 30-40 minute session. Focus on strength progression over volume, and do not recommend more than seven exercises.
     """
     response = client.chat.completions.create(
         model=model_name,
