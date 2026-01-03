@@ -2,12 +2,12 @@
 
 ## Overview
 
-aiworkoutplanner is an AI-powered workout planner that uses OpenAI to generate personalized upper body strength workouts and track your progress via email. It monitors an email inbox for workout-related conversations and handles two types of interactions:
+aiworkoutplanner is an AI-powered workout planner that uses OpenAI and Pydantic AI to generate personalized upper body strength workouts and track your progress via email. It monitors an email inbox for workout-related conversations and handles two types of interactions:
 
 - **Workout generation**: Creates AI-powered workouts based on your exercise history and weight progression
-- **Progress tracking**: Parses your workout completion responses and updates a CSV file `workout_history.csv` to keep track of progression.
+- **Progress tracking**: Parses your workout completion responses using Pydantic AI for structured data validation and updates a CSV file `workout_history.csv` to keep track of progression.
 
-The system learns from your completion rates and weight consistency to recommend progressive overload, helping you build strength systematically while providing motivational quotes to keep you inspired.
+The system learns from your completion rates and weight consistency to recommend progressive overload, helping you build strength systematically while providing motivational quotes to keep you inspired. The integration of Pydantic AI ensures robust type safety and automatic validation of workout feedback data.
 
 ## Key Files
 
@@ -15,14 +15,15 @@ The system learns from your completion rates and weight consistency to recommend
 - `src/check_responses.py` — processes workout completion responses and updates history
 - `src/config.py` — static configuration and environment variables
 - `src/email_utils.py` — IMAP/SMTP helpers and email utilities with security filtering
-- `src/llm_utils.py` — LLM agent functions for workout generation and response parsing
+- `src/llm_utils.py` — LLM agent functions for workout generation and Pydantic AI-powered response parsing
+- `src/models.py` — Pydantic models for structured workout feedback validation
 - `data/workout_history.csv` — exercise log with completion data, weights, and progression tracking
 
 ## Environment & Setup
 
 Create and activate a Python virtual environment.
 
-Install required packages: `openai` and `pandas` (and any other dependencies in `src/`)
+Install required packages: `openai`, `pydantic-ai`, and `pandas` (and any other dependencies in `src/`)
 
 Provide these environment variables:
 - `IMAP_HOST` — IMAP server host
@@ -88,6 +89,6 @@ crontab -e
 
 3. **Completion Tracking**: You complete the workout (modifying as needed) and reply describing what you actually did
 
-4. **Progress Analysis**: AI parses your response to extract exercises, sets/reps, weights used, and completion percentage, then saves this structured data
+4. **Progress Analysis**: Pydantic AI parses your response with automatic validation to extract exercises, sets/reps, weights used, and completion percentage, then saves this structured data with type safety guarantees
 
 The system creates a closed feedback loop where each workout builds on your actual performance data, ensuring recommendations stay realistic and progressive.

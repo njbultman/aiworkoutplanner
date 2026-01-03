@@ -1,6 +1,8 @@
 # Imports
 from openai import OpenAI
 import json
+from pydantic_ai import Agent
+import models
 
 # Define agent to generate a workout plan based on user history
 def agent_generate_workout_plan(model_name: str, history_string: str) -> str:
@@ -48,35 +50,26 @@ def agent_generate_workout_plan(model_name: str, history_string: str) -> str:
 
 # Define agent to parse workout feedback from email responses into appropriate JSON object
 def agent_parse_workout_feedback(model_name: str, feedback: str) -> dict:
-    client = OpenAI()
-    prompt = f"""
-    Parse this workout feedback email and extract the key information. Return a JSON object with these exact keys:
-    - completed_exercises: list of strings describing what exercises were completed. Each exercise should be its own item in the list
-    - sets_reps: list of strings describing sets and reps for each exercise in completed_exercises (e.g., "3x10", "4x8")
-    - weights_used: List of integers corresponding to weights for each exercise in completed_exercises
-    - completion_percentage: integer from 0-100 (default 100 if not mentioned) for each exercise in completed_exercises
-    
-    Email feedback:
-    {feedback}
-    
-    Return only valid JSON, no other text.
-    """
-    response = client.chat.completions.create(
-        model=model_name,
-        messages=[
-            {"role": "system", "content": "You are a data extraction assistant. Parse workout feedback emails and return structured JSON data. Always return valid JSON with the exact keys requested."},
-            {"role": "user", "content": prompt}
-        ]
+    pydantic_model_name = f"openai:{model_name}"
+    workout_parser = Agent(
+        pydantic_model_name,
+        output_type=models.WorkoutFeedback,
+        retries=3,
+        system_prompt="""
+        You are a workout data extraction specialist. Your job is to parse workout feedback emails and extract structured information.
+
+        CRITICAL INSTRUCTIONS:
+        1. Extract ALL exercises mentioned in the feedback, even if partially completed
+        2. For each exercise, provide corresponding sets_reps, weights_used, and completion_percentage
+        3. All four lists (completed_exercises, sets_reps, weights_used, completion_percentage) must have the same length
+        4. Use None for weights_used when no weight is mentioned or for bodyweight exercises
+        5. Default completion_percentage to 100 if not explicitly mentioned
+        6. For sets_reps, use format like "3x10", "4x8", etc.
+
+        EXAMPLES:
+        - "Did 3 sets of 10 bench press at 135lbs" → completed_exercises: ["Bench Press"], sets_reps: ["3x10"], weights_used: [135], completion_percentage: [100]
+        - "Pull-ups 3x8, only got 80% through" → completed_exercises: ["Pull-ups"], sets_reps: ["3x8"], weights_used: [None], completion_percentage: [80]
+        """
     )
-    message = response.choices[0].message.content.strip()
-    try:
-        return json.loads(message)
-    except json.JSONDecodeError:
-        catch_response = client.chat.completions.create(
-            model=model_name,
-            messages=[
-                {"role": "system", "content": "You are a JSON parsing assistant that helps correct invalid JSON. Only return the corrected JSON, no other text."},
-                {"role": "user", "content": f"Here is the invalid JSON - correct it: {message}."}
-            ]
-        )
-        return json.loads(catch_response.choices[0].message.content.strip())
+    result = workout_parser.run_sync(feedback)
+    return result.output.to_dict()
